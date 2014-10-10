@@ -23,7 +23,7 @@ import org.discogs.ws.search.SearchResult;
 
 import com.zwb.tab.Tab;
 
-public class ParserAPITest extends TestCase
+public class ParserAPITestDiscogs extends TestCase
 {
     public void testParserAPI()
     {
@@ -66,7 +66,7 @@ public class ParserAPITest extends TestCase
 			continue;
 		    }
 		}
-		else if (r.getType().equals("release"))
+		else if (r.getType().equals("release") || r.getType().equals("master"))
 		{
 		    try
 		    {
@@ -105,7 +105,7 @@ public class ParserAPITest extends TestCase
 	    
 	    Tab labelTab = new Tab("LABEL", "", "");
 	    addLabels(labelTab, 0, labels);
-
+	    
 	    System.out.println(artistTab.printFormatted());
 	    System.out.println(releaseTab.printFormatted());
 	    System.out.println(labelTab.printFormatted());
@@ -166,7 +166,7 @@ public class ParserAPITest extends TestCase
 	tab = addRow(tab, dep + 1, "styles", o2str(r.getStyles()));
 	tab = addRow(tab, dep + 1, "genres", o2str(r.getGenres()));
 	r.getNotes();
-//	tab = addRow(tab, dep + 1, "notes", r.getNotes());
+	// tab = addRow(tab, dep + 1, "notes", r.getNotes());
 	tab = addRow(tab, dep + 1, "country", r.getCountry());
 	tab = addRow(tab, dep + 1, "release date", o2str(r.getReleaseDate()));
 	tab = addRow(tab, dep + 1, "artists", " ");
@@ -177,6 +177,10 @@ public class ParserAPITest extends TestCase
 	tab = addTracks(tab, dep + 2, r.getTracks());
 	tab = addRow(tab, dep + 1, "formats", " ");
 	tab = addFormats(tab, dep + 2, r.getFormats());
+	tab = addRow(tab, dep + 1, "label", o2str(r.getLabel()));
+	tab = addRow(tab, dep + 1, "label name", r.getLabelName());
+	tab = addRow(tab, dep + 1, "labels", o2str(r.getLabels()));
+	tab = addRow(tab, dep + 1, "label names", o2str(r.getLabelNames()));
 	tab.addSeparator();
 	return tab;
     }
@@ -196,23 +200,46 @@ public class ParserAPITest extends TestCase
     private Tab addArtistRelease(Tab tab, int dep, ArtistRelease arl) throws FetchException
     {
 	tab = addRow(tab, dep, "title", arl.getTitle());
+	try
+	{
+	    if (arl.getRelease() == null)
+	    {
+		tab = addRow(tab, dep + 1, "nested release", "NULL");
+	    }
+	    else
+	    {
+		tab = addRow(tab, dep + 1, "nested release", arl.getRelease().getTitle());
+	    }
+	}
+	catch (FetchException e)
+	{
+	    tab = addRow(tab, dep + 1, "nested release", e.getClass().getName() + ": " + e.getMessage());
+	}
 	tab = addRow(tab, dep + 1, "id", arl.getId());
 	tab = addRow(tab, dep + 1, "type", arl.getType());
 	tab = addRow(tab, dep + 1, "status", arl.getStatus());
 	tab = addRow(tab, dep + 1, "year", Integer.toString(arl.getYear()));
-	tab = addRow(tab, dep + 1, "formats", o2str(arl.getFormats()));
-	tab = addRow(tab, dep + 1, "format string", arl.getFormatString());
-	tab = addRow(tab, dep + 1, "label", o2str(arl.getLabel()));
-	tab = addRow(tab, dep + 1, "label name", arl.getLabelName());
-	tab = addRow(tab, dep + 1, "labels", o2str(arl.getLabels()));
-	tab = addRow(tab, dep + 1, "label names", o2str(arl.getLabelNames()));
 	return tab;
     }
     
     private Tab addReleaseArtist(Tab tab, int dep, ReleaseArtist rla) throws FetchException
     {
 	tab = addRow(tab, dep, "name", rla.getName());
-	tab = addRow(tab, dep +1 , "nested artist", rla.getArtist().getName());
+	try
+	{
+	    if (rla.getArtist() == null)
+	    {
+		tab = addRow(tab, dep + 1, "nested artist", "NULL");
+	    }
+	    else
+	    {
+		tab = addRow(tab, dep + 1, "nested artist", rla.getArtist().getName());
+	    }
+	}
+	catch (FetchException e)
+	{
+	    tab = addRow(tab, dep + 1, "nested artist", e.getClass().getName() + ": " + e.getMessage());
+	}
 	tab = addRow(tab, dep + 1, "ANV", rla.getANV());
 	tab = addRow(tab, dep + 1, "roles", o2str(rla.getRoles()));
 	return tab;
@@ -229,6 +256,7 @@ public class ParserAPITest extends TestCase
     private Tab addTrack(Tab tab, int dep, Track t) throws FetchException
     {
 	tab = addRow(tab, dep, "title", t.getTitle());
+	tab = addRow(tab, dep + 1, "type", t.getTrackType());
 	tab = addRow(tab, dep + 1, "position", t.getPosition());
 	tab = addRow(tab, dep + 1, "disc", Integer.toString(t.getDisc()));
 	tab = addRow(tab, dep + 1, "no", Integer.toString(t.getNumber()));
@@ -330,6 +358,23 @@ public class ParserAPITest extends TestCase
 	    return "NULL";
 	}
 	return o.toString();
+    }
+    
+    private String o2str(String[] s)
+    {
+	if (s == null)
+	{
+	    return "NULL";
+	}
+	String r = "{";
+	String comma = "";
+	for (String ss : s)
+	{
+	    r += comma + s;
+	    comma = ", ";
+	}
+	r += "}";
+	return r;
     }
     
 }

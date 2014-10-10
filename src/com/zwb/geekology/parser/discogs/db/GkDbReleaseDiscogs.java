@@ -23,7 +23,7 @@ import com.zwb.lazyload.Ptr;
 public class GkDbReleaseDiscogs extends AbstrGkDbItemDiscogs implements IGkDbRelease
 {
     private com.zwb.discogs.util.MyLogger log = new MyLogger(this.getClass());
-
+    
     private Release release;
     private GkDbArtistDiscogs artist;
     private Ptr<List<IGkDbTag>> tags = new Ptr<>();
@@ -32,6 +32,7 @@ public class GkDbReleaseDiscogs extends AbstrGkDbItemDiscogs implements IGkDbRel
     private Ptr<List<String>> trackNames = new Ptr<>();
     private Ptr<List<String>> formats = new Ptr<List<String>>();
     private Ptr<List<String>> labels = new Ptr<List<String>>();
+    private Ptr<Integer> discCount = new Ptr<Integer>();
     
     public GkDbReleaseDiscogs(Release release, GkDbArtistDiscogs artist)
     {
@@ -122,13 +123,7 @@ public class GkDbReleaseDiscogs extends AbstrGkDbItemDiscogs implements IGkDbRel
     @Override
     public Integer getDiscCount()
     {
-	List<IGkDbTrack> tracks = this.getTracks();
-	int discs = 0;
-	for (IGkDbTrack t : tracks)
-	{
-	    discs = Math.max(discs, t.getDiscNo());
-	}
-	return discs;
+	return LazyLoader.loadLazy(this.discCount, new DiscCountLoader());
     }
     
     @Override
@@ -136,25 +131,25 @@ public class GkDbReleaseDiscogs extends AbstrGkDbItemDiscogs implements IGkDbRel
     {
 	return LazyLoader.loadLazy(this.formats, new FormatLoader());
     }
-
+    
     @Override
     public boolean hasFormats()
     {
-	return this.getFormats()!=null && !this.getFormats().isEmpty();
+	return this.getFormats() != null && !this.getFormats().isEmpty();
     }
-
+    
     @Override
     public List<String> getLabels()
     {
 	return LazyLoader.loadLazy(this.labels, new LabelLoader());
     }
-
+    
     @Override
     public boolean hasLabels()
     {
-	return this.getLabels()!=null && !this.getLabels().isEmpty();
+	return this.getLabels() != null && !this.getLabels().isEmpty();
     }
-
+    
     class TagLoader implements ILoader
     {
 	public List<IGkDbTag> load()
@@ -185,7 +180,7 @@ public class GkDbReleaseDiscogs extends AbstrGkDbItemDiscogs implements IGkDbRel
 	    {
 		if (t.getNumber() == -1)
 		{
-		    log.debug("no dicogs track number info for release <"+GkDbReleaseDiscogs.this.getName()+">, track <"+t.getTitle()+"> -> track no format <"+t.getPosition()+">; switching to sequence based numbering for the whole release");
+		    log.debug("no dicogs track number info for release <" + GkDbReleaseDiscogs.this.getName() + ">, track <" + t.getTitle() + "> -> track no format <" + t.getPosition() + ">; switching to sequence based numbering for the whole release");
 		    manualTrackNo = true;
 		}
 		break;
@@ -193,7 +188,7 @@ public class GkDbReleaseDiscogs extends AbstrGkDbItemDiscogs implements IGkDbRel
 	    int i = 1;
 	    for (Track t : discogsTracks)
 	    {
-		if(t.getTrackType().equals("heading"))
+		if (t.getTrackType().equals("heading"))
 		{
 		    continue;
 		}
@@ -215,14 +210,14 @@ public class GkDbReleaseDiscogs extends AbstrGkDbItemDiscogs implements IGkDbRel
 	{
 	    List<Format> discogsFormats = GkDbReleaseDiscogs.this.release.getFormats();
 	    List<String> formats = new ArrayList<String>();
-	    for(Format f: discogsFormats)
+	    for (Format f : discogsFormats)
 	    {
-		formats.add(f.getName()+"/"+f.getDescriptions());
+		formats.add(f.getName() + "/" + f.getDescriptions());
 	    }
 	    return formats;
 	}
     }
-
+    
     class LabelLoader implements ILoader
     {
 	public List<String> load()
@@ -230,4 +225,19 @@ public class GkDbReleaseDiscogs extends AbstrGkDbItemDiscogs implements IGkDbRel
 	    return GkDbReleaseDiscogs.this.release.getLabelNames();
 	}
     }
+    
+    class DiscCountLoader implements ILoader<Integer>
+    {
+	public Integer load()
+	{
+	    List<IGkDbTrack> tracks = GkDbReleaseDiscogs.this.getTracks();
+	    int discs = 0;
+	    for (IGkDbTrack t : tracks)
+	    {
+		discs = Math.max(discs, t.getDiscNo());
+	    }
+	    return discs;
+	}
+    }
+    
 }

@@ -4,9 +4,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.zwb.geekology.parser.api.db.IGkDbItem;
 import com.zwb.geekology.parser.api.db.IGkDbTag;
 import com.zwb.geekology.parser.api.parser.GkParserObjectFactory;
 import com.zwb.geekology.parser.discogs.util.Config;
+import com.zwb.geekology.parser.discogs.util.StringUtilsDiscogs;
+import com.zwb.geekology.parser.impl.util.GkParserStringUtils;
+import com.zwb.stringutil.ComparisonAlgorithm;
+import com.zwb.stringutil.ISatiniseFilterArray;
 
 public class GkDbTagDiscogs extends AbstrGkDbItemDiscogs implements IGkDbTag
 {
@@ -77,11 +82,11 @@ public class GkDbTagDiscogs extends AbstrGkDbItemDiscogs implements IGkDbTag
     {
 	if(this.getWeight()>o.getWeight())
 	{
-	    return 1;
+	    return -1;
 	}
 	else if(this.getWeight()<o.getWeight())
 	{
-	    return -1;
+	    return 1;
 	}
 	else
 	{
@@ -109,4 +114,11 @@ public class GkDbTagDiscogs extends AbstrGkDbItemDiscogs implements IGkDbTag
     {
 	return this.getName().hashCode();
     }
+
+    @Override
+    public ISatiniseFilterArray getFilters()
+    {
+	return StringUtilsDiscogs.getAllTagNameFilters();
+    }
+
 }

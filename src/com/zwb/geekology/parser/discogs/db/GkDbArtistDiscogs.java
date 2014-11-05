@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.discogs.exception.FetchException;
+import org.discogs.exception.DiscogsAuthException;
+import org.discogs.exception.DiscogsException;
+import org.discogs.exception.DiscogsFetchException;
 import org.discogs.model.Artist;
 import org.discogs.model.ArtistRelease;
 import org.discogs.model.Release;
@@ -18,12 +20,17 @@ import com.zwb.geekology.parser.api.db.IGkDbRelease;
 import com.zwb.geekology.parser.api.db.IGkDbTag;
 import com.zwb.geekology.parser.api.parser.GkParserObjectFactory;
 import com.zwb.geekology.parser.discogs.util.Config;
+import com.zwb.geekology.parser.discogs.util.StringUtilsDiscogs;
 import com.zwb.geekology.parser.enums.GkParsingEventType;
-import com.zwb.geekology.parser.impl.NameLoader;
+import com.zwb.geekology.parser.impl.util.GkParserStringUtils;
+import com.zwb.geekology.parser.impl.util.NameLoader;
 import com.zwb.lazyload.ILoader;
 import com.zwb.lazyload.LazyLoader;
 import com.zwb.lazyload.Ptr;
+import com.zwb.stringutil.ISatiniseFilter;
+import com.zwb.stringutil.ISatiniseFilterArray;
 
+import exception.internal.AuthRuntimeException;
 import exception.internal.FetchRuntimeException;
 
 //TODO
@@ -129,9 +136,13 @@ public class GkDbArtistDiscogs extends AbstrGkDbItemDiscogs implements IGkDbArti
 		artistReleases = GkDbArtistDiscogs.this.artist.getReleases();
 		log.info("for artist <" + GkDbArtistDiscogs.this.getName() + "> loaded the following releases: " + artistReleases);
 	    }
-	    catch (FetchException e)
+	    catch (DiscogsFetchException e)
 	    {
 		throw new FetchRuntimeException(e);
+	    }
+	    catch (DiscogsAuthException e)
+	    {
+		throw new AuthRuntimeException(e);
 	    }
 	    List<IGkDbRelease> releases = new ArrayList<>();
 	    for (ArtistRelease r : artistReleases)
@@ -152,7 +163,7 @@ public class GkDbArtistDiscogs extends AbstrGkDbItemDiscogs implements IGkDbArti
 			log.info("for artist release <" + r.getTitle() + "> artist <" + GkDbArtistDiscogs.this.getName() + "> has role <" + r.getRole() + ">!=Main -> sampler result, dismissing!");
 		    }
 		}
-		catch (FetchException e)
+		catch (DiscogsException e)
 		{
 		    GkDbArtistDiscogs.this.addEvent(GkParserObjectFactory.createParsingEvent(GkParsingEventType.EXTERNAL_ERROR, "exception in dicogs framework while loading release info of release <" + r.getTitle() + "> of artist <" + GkDbArtistDiscogs.this.getName() + ">; probably bad internet connection: " + e.getCause().getClass().getName() + " -- " + e.getCause().getMessage(), GkDbArtistDiscogs.this.getSource()));
 		}
@@ -206,4 +217,9 @@ public class GkDbArtistDiscogs extends AbstrGkDbItemDiscogs implements IGkDbArti
 	}
     }
     
+    @Override
+    public ISatiniseFilterArray getFilters()
+    {
+	return StringUtilsDiscogs.getAllArtistNameFilters();
+    }
 }

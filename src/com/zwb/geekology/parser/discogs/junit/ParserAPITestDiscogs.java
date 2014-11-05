@@ -5,7 +5,8 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
-import org.discogs.exception.FetchException;
+import org.discogs.exception.DiscogsAuthException;
+import org.discogs.exception.DiscogsFetchException;
 import org.discogs.model.Artist;
 import org.discogs.model.ArtistRelease;
 import org.discogs.model.Format;
@@ -47,7 +48,7 @@ public class ParserAPITestDiscogs extends TestCase
 			Artist a = ((ArtistSearchResult) r).getArtist();
 			artists.add(a);
 		    }
-		    catch (FetchException e)
+		    catch (DiscogsFetchException e)
 		    {
 			error.add(e.getClass().getName() + " while trying to get artist: type=<" + r.getType() + "> title=<" + r.getTitle() + "> id=<" + r.getId() + ">");
 			continue;
@@ -60,7 +61,7 @@ public class ParserAPITestDiscogs extends TestCase
 			Label l = ((LabelSearchResult) r).getLabel();
 			labels.add(l);
 		    }
-		    catch (FetchException e)
+		    catch (DiscogsFetchException e)
 		    {
 			error.add(e.getClass().getName() + " while trying to get label: type=<" + r.getType() + "> title=<" + r.getTitle() + "> id=<" + r.getId() + ">");
 			continue;
@@ -73,7 +74,7 @@ public class ParserAPITestDiscogs extends TestCase
 			Release a = ((ReleaseSearchResult) r).getRelease();
 			releases.add(a);
 		    }
-		    catch (FetchException e)
+		    catch (DiscogsFetchException e)
 		    {
 			error.add(e.getClass().getName() + " while trying to get release: type=<" + r.getType() + "> title=<" + r.getTitle() + "> id=<" + r.getId() + ">");
 			continue;
@@ -143,7 +144,7 @@ public class ParserAPITestDiscogs extends TestCase
 	return tab;
     }
     
-    private Tab addArtist(Tab tab, int dep, Artist a) throws FetchException
+    private Tab addArtist(Tab tab, int dep, Artist a) throws DiscogsFetchException, DiscogsAuthException
     {
 	tab = addRow(tab, dep, "name", a.getName());
 	tab = addRow(tab, dep + 1, "name variations", o2str(a.getNameVariations()));
@@ -158,7 +159,7 @@ public class ParserAPITestDiscogs extends TestCase
 	return tab;
     }
     
-    private Tab addRelease(Tab tab, int dep, Release r) throws FetchException
+    private Tab addRelease(Tab tab, int dep, Release r) throws DiscogsFetchException, DiscogsAuthException
     {
 	tab = addRow(tab, dep, "title", r.getTitle());
 	tab = addRow(tab, dep + 1, "id", r.getId());
@@ -185,7 +186,7 @@ public class ParserAPITestDiscogs extends TestCase
 	return tab;
     }
     
-    private Tab addLabel(Tab tab, int dep, Label l) throws FetchException
+    private Tab addLabel(Tab tab, int dep, Label l) throws DiscogsFetchException, DiscogsAuthException
     {
 	tab = addRow(tab, dep, "name", l.getName());
 	tab = addRow(tab, dep + 1, "contact info", l.getContactInfo());
@@ -197,7 +198,7 @@ public class ParserAPITestDiscogs extends TestCase
 	return tab;
     }
     
-    private Tab addArtistRelease(Tab tab, int dep, ArtistRelease arl) throws FetchException
+    private Tab addArtistRelease(Tab tab, int dep, ArtistRelease arl) throws DiscogsFetchException, DiscogsAuthException
     {
 	tab = addRow(tab, dep, "title", arl.getTitle());
 	try
@@ -211,7 +212,7 @@ public class ParserAPITestDiscogs extends TestCase
 		tab = addRow(tab, dep + 1, "nested release", arl.getRelease().getTitle());
 	    }
 	}
-	catch (FetchException e)
+	catch (DiscogsFetchException e)
 	{
 	    tab = addRow(tab, dep + 1, "nested release", e.getClass().getName() + ": " + e.getMessage());
 	}
@@ -222,7 +223,7 @@ public class ParserAPITestDiscogs extends TestCase
 	return tab;
     }
     
-    private Tab addReleaseArtist(Tab tab, int dep, ReleaseArtist rla) throws FetchException
+    private Tab addReleaseArtist(Tab tab, int dep, ReleaseArtist rla) throws DiscogsFetchException, DiscogsAuthException
     {
 	tab = addRow(tab, dep, "name", rla.getName());
 	try
@@ -236,7 +237,7 @@ public class ParserAPITestDiscogs extends TestCase
 		tab = addRow(tab, dep + 1, "nested artist", rla.getArtist().getName());
 	    }
 	}
-	catch (FetchException e)
+	catch (DiscogsFetchException e)
 	{
 	    tab = addRow(tab, dep + 1, "nested artist", e.getClass().getName() + ": " + e.getMessage());
 	}
@@ -245,7 +246,7 @@ public class ParserAPITestDiscogs extends TestCase
 	return tab;
     }
     
-    private Tab addFormat(Tab tab, int dep, Format f) throws FetchException
+    private Tab addFormat(Tab tab, int dep, Format f) throws DiscogsFetchException
     {
 	tab = addRow(tab, dep, "name", f.getName());
 	tab = addRow(tab, dep + 1, "quantitiy", Integer.toString(f.getQuantity()));
@@ -253,7 +254,7 @@ public class ParserAPITestDiscogs extends TestCase
 	return tab;
     }
     
-    private Tab addTrack(Tab tab, int dep, Track t) throws FetchException
+    private Tab addTrack(Tab tab, int dep, Track t) throws DiscogsFetchException
     {
 	tab = addRow(tab, dep, "title", t.getTitle());
 	tab = addRow(tab, dep + 1, "type", t.getTrackType());
@@ -265,7 +266,7 @@ public class ParserAPITestDiscogs extends TestCase
 	return tab;
     }
     
-    private Tab addLabelRelease(Tab tab, int dep, LabelRelease r) throws FetchException
+    private Tab addLabelRelease(Tab tab, int dep, LabelRelease r) throws DiscogsFetchException, DiscogsAuthException
     {
 	tab = addRow(tab, dep, "title", r.getTitle());
 	tab = addRow(tab, dep + 1, "nested release", r.getRelease().getTitle());
@@ -279,7 +280,7 @@ public class ParserAPITestDiscogs extends TestCase
 	return tab;
     }
     
-    private Tab addArtists(Tab tab, int dep, List<Artist> a) throws FetchException
+    private Tab addArtists(Tab tab, int dep, List<Artist> a) throws DiscogsFetchException, DiscogsAuthException
     {
 	for (Artist i : a)
 	{
@@ -288,7 +289,7 @@ public class ParserAPITestDiscogs extends TestCase
 	return tab;
     }
     
-    private Tab addReleases(Tab tab, int dep, List<Release> r) throws FetchException
+    private Tab addReleases(Tab tab, int dep, List<Release> r) throws DiscogsFetchException, DiscogsAuthException
     {
 	for (Release i : r)
 	{
@@ -297,7 +298,7 @@ public class ParserAPITestDiscogs extends TestCase
 	return tab;
     }
     
-    private Tab addArtistReleases(Tab tab, int dep, List<ArtistRelease> arl) throws FetchException
+    private Tab addArtistReleases(Tab tab, int dep, List<ArtistRelease> arl) throws DiscogsFetchException, DiscogsAuthException
     {
 	for (ArtistRelease i : arl)
 	{
@@ -306,7 +307,7 @@ public class ParserAPITestDiscogs extends TestCase
 	return tab;
     }
     
-    private Tab addLabelReleases(Tab tab, int dep, List<LabelRelease> arl) throws FetchException
+    private Tab addLabelReleases(Tab tab, int dep, List<LabelRelease> arl) throws DiscogsFetchException, DiscogsAuthException
     {
 	for (LabelRelease i : arl)
 	{
@@ -315,7 +316,7 @@ public class ParserAPITestDiscogs extends TestCase
 	return tab;
     }
     
-    private Tab addReleaseArtists(Tab tab, int dep, List<ReleaseArtist> rla) throws FetchException
+    private Tab addReleaseArtists(Tab tab, int dep, List<ReleaseArtist> rla) throws DiscogsFetchException, DiscogsAuthException
     {
 	for (ReleaseArtist i : rla)
 	{
@@ -324,7 +325,7 @@ public class ParserAPITestDiscogs extends TestCase
 	return tab;
     }
     
-    private Tab addLabels(Tab tab, int dep, List<Label> l) throws FetchException
+    private Tab addLabels(Tab tab, int dep, List<Label> l) throws DiscogsFetchException, DiscogsAuthException
     {
 	for (Label i : l)
 	{
@@ -333,7 +334,7 @@ public class ParserAPITestDiscogs extends TestCase
 	return tab;
     }
     
-    private Tab addFormats(Tab tab, int dep, List<Format> f) throws FetchException
+    private Tab addFormats(Tab tab, int dep, List<Format> f) throws DiscogsFetchException
     {
 	for (Format i : f)
 	{
@@ -342,7 +343,7 @@ public class ParserAPITestDiscogs extends TestCase
 	return tab;
     }
     
-    private Tab addTracks(Tab tab, int dep, List<Track> t) throws FetchException
+    private Tab addTracks(Tab tab, int dep, List<Track> t) throws DiscogsFetchException
     {
 	for (Track i : t)
 	{

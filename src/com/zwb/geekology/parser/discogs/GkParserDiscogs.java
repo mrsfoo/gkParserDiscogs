@@ -5,7 +5,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import org.discogs.exception.FetchException;
+import org.discogs.exception.DiscogsException;
+import org.discogs.exception.DiscogsFetchException;
 import org.discogs.model.Artist;
 import org.discogs.model.Release;
 
@@ -27,6 +28,7 @@ import com.zwb.geekology.parser.enums.GkParsingEventType;
 import com.zwb.geekology.parser.enums.GkParsingState;
 import com.zwb.geekology.parser.impl.GkParsingResultArtist;
 import com.zwb.geekology.parser.impl.GkParsingResultSampler;
+import com.zwb.stringutil.ComparisonAlgorithm;
 
 public class GkParserDiscogs extends AbstrGkParser implements IGkParser
 {
@@ -39,7 +41,14 @@ public class GkParserDiscogs extends AbstrGkParser implements IGkParser
 	super();
 	log.debug("creating discogs parser");
 	this.setSource(Config.getSourceString());
-	this.discogs = new DiscogsHelper();
+	try
+	{
+	    this.discogs = new DiscogsHelper();
+	}
+	catch (DiscogsException e)
+	{
+	    setConstructorEvent(GkParsingEventType.EXTERNAL_ERROR, "exception in last.fm framework; probably bad internet connection: " + e.getClass().getName() + " -- " + e.getMessage());
+	}
     }
     
     @Override
@@ -70,9 +79,9 @@ public class GkParserDiscogs extends AbstrGkParser implements IGkParser
 	    result.setArtist(artist);
 	    return (IGkParsingResultArtist) setResultSuccess(result);
 	}
-	catch (FetchException e)
+	catch (DiscogsException e)
 	{
-	    result.addEvent(GkParsingEventType.EXTERNAL_ERROR, "exception in last.fm framework; probably bad internet connection: " + e.getClass().getName() + " -- " + e.getMessage());
+	    result.addEvent(GkParsingEventType.EXTERNAL_ERROR, "exception in discogs framework: " + e.getClass().getName() + " -- " + e.getMessage());
 	    this.setResultErrorThrow(result, e);
 	}
 	return null;
@@ -98,7 +107,7 @@ public class GkParserDiscogs extends AbstrGkParser implements IGkParser
 	}
     }
     
-    private IGkDbArtist queryArtist(String artistName, GkParsingResultArtist result) throws GkParserException, FetchException
+    private IGkDbArtist queryArtist(String artistName, GkParsingResultArtist result) throws GkParserException, DiscogsException
     {
 	Collection<Artist> artists = queryDiscogsArtists(artistName);
 	if (!artists.isEmpty())
@@ -113,7 +122,7 @@ public class GkParserDiscogs extends AbstrGkParser implements IGkParser
 	return null;
     }
     
-    private IGkDbArtist queryArtistViaRelease(String artistName, String releaseName, GkParsingResultArtist result) throws GkParserException, FetchException
+    private IGkDbArtist queryArtistViaRelease(String artistName, String releaseName, GkParsingResultArtist result) throws GkParserException, DiscogsException
     {
 	Artist artist = queryDiscogsArtistViaReleases(artistName, releaseName);
 	if (artist == null)
@@ -131,7 +140,7 @@ public class GkParserDiscogs extends AbstrGkParser implements IGkParser
 	throw new RuntimeException("NOT IMPLEMENTED YET!");
     }
     
-    private Collection<Artist> queryDiscogsArtists(String artistName) throws FetchException
+    private Collection<Artist> queryDiscogsArtists(String artistName) throws DiscogsException
     {
 	Collection<Artist> artists = this.discogs.searchArtist(artistName, false);
 	LogLevel level = LogLevel.DEBUG;
@@ -148,9 +157,17 @@ public class GkParserDiscogs extends AbstrGkParser implements IGkParser
 	return artists;
     }
     
-    private Artist queryDiscogsArtistViaReleases(String artistName, String releaseName) throws FetchException
+    private Artist queryDiscogsArtistViaReleases(String artistName, String releaseName) throws DiscogsException
     {
-	Collection<Release> albums = this.discogs.searchRelease(releaseName, false);
+	Collection<Release> albums = null;
+	try
+	{
+	    albums = this.discogs.searchRelease(releaseName, false);
+	}
+	catch (DiscogsException e)
+	{
+	    log.error("caught discogs exception <"+e.getClass().getName()+"> searching for artist <" + artistName + "> via release <" + releaseName + ">");
+	}
 	if ((albums == null) || (albums.size() == 0))
 	{
 	    return null;
@@ -171,7 +188,7 @@ public class GkParserDiscogs extends AbstrGkParser implements IGkParser
 	    Artist me = it.next();
 	    String meName = me.getName();
 	    double thresh = Config.getSearchTreshold();
-	    if (StringUtilsDiscogs.compare(meName, artistName) >= thresh)
+	    if (StringUtilsDiscogs.compareArtists(meName, artistName) >= thresh)
 	    {
 		return me;
 	    }
@@ -179,7 +196,7 @@ public class GkParserDiscogs extends AbstrGkParser implements IGkParser
 	return artists.iterator().next();
     }
     
-    private Artist findBestMatchingAlbumArtist(String artistName, String releaseName, Collection<Release> albums) throws FetchException
+    private Artist findBestMatchingAlbumArtist(String artistName, String releaseName, Collection<Release> albums) throws DiscogsException
     {
 	List<String> matches = new ArrayList<>();
 	Artist ret = null;
@@ -197,7 +214,7 @@ public class GkParserDiscogs extends AbstrGkParser implements IGkParser
 	    }
 	    
 	    double thresh = Config.getSearchTresholdViaAlbum();
-	    if (StringUtilsDiscogs.compare(artistNameLocal, artistName) >= thresh)
+	    if (StringUtilsDiscogs.compareArtists(artistNameLocal, artistName) >= thresh)
 	    {
 		ret = this.discogs.searchArtist(artistNameLocal, false).iterator().next();
 		if (log.isLogLevelEnabled(level))

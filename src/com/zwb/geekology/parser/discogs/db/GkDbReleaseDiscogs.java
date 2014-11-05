@@ -10,15 +10,20 @@ import org.discogs.model.Track;
 
 import com.zwb.discogs.util.MyLogger;
 import com.zwb.geekology.parser.api.db.IGkDbArtist;
+import com.zwb.geekology.parser.api.db.IGkDbItem;
 import com.zwb.geekology.parser.api.db.IGkDbRelease;
 import com.zwb.geekology.parser.api.db.IGkDbTag;
 import com.zwb.geekology.parser.api.db.IGkDbTrack;
 import com.zwb.geekology.parser.api.parser.GkParserObjectFactory;
 import com.zwb.geekology.parser.discogs.util.Config;
-import com.zwb.geekology.parser.impl.NameLoader;
+import com.zwb.geekology.parser.discogs.util.StringUtilsDiscogs;
+import com.zwb.geekology.parser.impl.util.GkParserStringUtils;
+import com.zwb.geekology.parser.impl.util.NameLoader;
 import com.zwb.lazyload.ILoader;
 import com.zwb.lazyload.LazyLoader;
 import com.zwb.lazyload.Ptr;
+import com.zwb.stringutil.ComparisonAlgorithm;
+import com.zwb.stringutil.ISatiniseFilterArray;
 
 public class GkDbReleaseDiscogs extends AbstrGkDbItemDiscogs implements IGkDbRelease
 {
@@ -239,5 +244,10 @@ public class GkDbReleaseDiscogs extends AbstrGkDbItemDiscogs implements IGkDbRel
 	    return discs;
 	}
     }
-    
+
+    @Override
+    public ISatiniseFilterArray getFilters()
+    {
+	return StringUtilsDiscogs.getAllReleaseNameFilters(this.getArtist().getName());
+    }
 }

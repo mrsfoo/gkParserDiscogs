@@ -1,10 +1,10 @@
 package exception.internal;
 
-import org.discogs.exception.FetchException;
+import org.discogs.exception.DiscogsFetchException;
 
 public class FetchRuntimeException extends RuntimeException
 {
-    public FetchRuntimeException(FetchException fetchException)
+    public FetchRuntimeException(DiscogsFetchException fetchException)
     {
 	super(fetchException);
     }

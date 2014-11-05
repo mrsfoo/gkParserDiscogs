@@ -3,13 +3,14 @@ package com.zwb.geekology.parser.discogs.junit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.discogs.exception.FetchException;
+import org.discogs.exception.DiscogsFetchException;
 import org.discogs.model.Artist;
 
 import junit.framework.TestCase;
@@ -26,7 +27,7 @@ import com.zwb.geekology.parser.api.parser.IGkParsingResultArtist;
 import com.zwb.geekology.parser.discogs.GkParserDiscogs;
 import com.zwb.geekology.parser.discogs.util.Config;
 import com.zwb.geekology.parser.discogs.util.DiscogsHelper;
-import com.zwb.geekology.parser.impl.DbItemFileWriter;
+import com.zwb.geekology.parser.impl.util.DbItemFileWriter;
 import com.zwb.stringutil.StringReformat;
 import com.zwb.tab.Tab;
 
@@ -37,31 +38,37 @@ public class TestSandboxDiscogs extends TestCase
 	GkParserDiscogs parser = new GkParserDiscogs();
 	
 	Map<String, String> input = new HashMap<>();
+	input.put("Sookee", "Parole Brückenbau EP");
+	input.put("Zehn Meter Feldweg", "Und der Komische Komet Im Kornfeld");
 	input.put("motorhead", "nr n,k43t wfne");
 	input.put("scott walker", "scott 2");
 	input.put("walker brothers", "images");
 	input.put("trümmer", "schutt und asche");
-	input.put("julgast", "feel like dreaming ep");
-	input.put("ja, panik", "the angst and the money");
-	input.put("marr435ko fürstenberg", "gesamtlaufzeit");
-	input.put("biodub", "goldkaefer");
-	input.put("noetics", "rotterdub ep");
-	input.put("nr n,k 3455 43t wfne", "4545 45rtg tdgs 43tgr");
-	input.put("", "scott 2");
-	input.put("metallica", "");
-	input.put("4545 45 435 tg tdgs 43tgr", "scott 2");
-	
+//	input.put("julgast", "feel like dreaming ep");
+//	input.put("ja, panik", "the angst and the money");
+//	input.put("marr435ko fürstenberg", "gesamtlaufzeit");
+//	input.put("biodub", "goldkaefer");
+//	input.put("noetics", "rotterdub ep");
+//	input.put("nr n,k 3455 43t wfne", "4545 45rtg tdgs 43tgr");
+//	input.put("", "scott 2");
+//	input.put("metallica", "");
+//	input.put("4545 45 435 tg tdgs 43tgr", "scott 2");
 	Map<String, IGkParsingResultArtist> resultsArtistQuery = new HashMap<>();
 	Map<String, IGkParsingResultArtist> resultsReleaseQuery = new HashMap<>();
 	List<IGkParsingResult> resultsListArtistQuery = new ArrayList<>();
 	List<IGkParsingResult> resultsListReleaseQuery = new ArrayList<>();
-	for (Entry<String, String> e : input.entrySet())
+	
+	List<String> searchOrder = new ArrayList<String>(input.keySet());
+	Collections.shuffle(searchOrder);
+	
+	for (String ar : searchOrder)
 	{
-	    System.out.println("parsing for --> " + e.getKey());
+	    String al = input.get(ar);
+	    System.out.println("parsing for --> " + ar);
 	    IGkParsingResultArtist result;
 	    try
 	    {
-		result = parser.parseArtist(GkParserObjectFactory.createQueryForArtist(e.getKey()));
+		result = parser.parseArtist(GkParserObjectFactory.createQueryForArtist(ar));
 	    }
 	    catch (GkParserExceptionNoResultFound ex)
 	    {
@@ -71,16 +78,17 @@ public class TestSandboxDiscogs extends TestCase
 	    {
 		result = (IGkParsingResultArtist) ex.getResult();
 	    }
-	    resultsArtistQuery.put(e.getKey(), result);
+	    resultsArtistQuery.put(ar, result);
 	    resultsListArtistQuery.add(result);
 	}
-	for (Entry<String, String> e : input.entrySet())
+	for (String ar : searchOrder)
 	{
-	    System.out.println("parsing for --> " + e.getKey() + "/" + e.getValue());
+	    String al = input.get(ar);
+	    System.out.println("parsing for --> " + ar + "/" + al);
 	    IGkParsingResultArtist result;
 	    try
 	    {
-		result = parser.parseArtist(GkParserObjectFactory.createQueryForArtist(e.getKey(), e.getValue()));
+		result = parser.parseArtist(GkParserObjectFactory.createQueryForArtist(ar, al));
 	    }
 	    catch (GkParserExceptionNoResultFound ex)
 	    {
@@ -90,7 +98,7 @@ public class TestSandboxDiscogs extends TestCase
 	    {
 		result = (IGkParsingResultArtist) ex.getResult();
 	    }
-	    resultsReleaseQuery.put(e.getKey(), result);
+	    resultsReleaseQuery.put(ar, result);
 	    resultsListReleaseQuery.add(result);
 	    if (result != null && result.getArtist() != null) result.getArtist().getStyleTags();
 	}

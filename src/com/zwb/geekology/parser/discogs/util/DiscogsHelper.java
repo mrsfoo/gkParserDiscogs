@@ -22,6 +22,8 @@ public class DiscogsHelper
     private Discogs discogs;
     private MyLogger log = new MyLogger(this.getClass());
     
+    private static final String TYPE_ARTIST = "artist";
+    
     public DiscogsHelper() throws DiscogsAuthException
     {
 	if (Config.getUseOAuth())
@@ -40,7 +42,9 @@ public class DiscogsHelper
     {
 	try
 	{
-	    List<ArtistSearchResult> searchResults = this.discogs.search(artistName).getArtistSearchResults();
+//	    List<ArtistSearchResult> searchResults = this.discogs.search(artistName).getArtistSearchResults();
+	    /** added search type; is this better? */
+	    List<ArtistSearchResult> searchResults = this.discogs.search(TYPE_ARTIST, artistName).getArtistSearchResults();
 	    List<Artist> result = new ArrayList<>();
 	    for (ArtistSearchResult a : searchResults)
 	    {

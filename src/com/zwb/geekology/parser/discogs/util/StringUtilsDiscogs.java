@@ -25,19 +25,26 @@ public class StringUtilsDiscogs
 	return StringReformat.compare(string0, string1, COMPARISON_ALGORITHM);
     }
     
+    public static double compareReleases(String artistName, String name0, String name1)
+    {
+	String string0 = getAllReleaseNameFilters(artistName).filter(name0, true);
+	String string1 = getAllReleaseNameFilters(artistName).filter(name1, true);
+	return StringReformat.compare(string0, string1, COMPARISON_ALGORITHM);
+    }
+    
     public static ISatiniseFilterArray getSpecificArtistNameFilters()
     {
 	List<ISatiniseFilter> list = new ArrayList<ISatiniseFilter>();
-	list.add(new RemovalFilter("([0-9])", ISatiniseFilter.Location.ALL));
-	list.add(new RemovalFilter("([0-9][0-9])", ISatiniseFilter.Location.ALL));
+	list.add(new RemovalFilter("\\([0-9]\\)", ISatiniseFilter.Location.ALL));
+	list.add(new RemovalFilter("\\([0-9][0-9]\\)", ISatiniseFilter.Location.ALL));
 	return new FilterArray(list);
     }
     
     public static ISatiniseFilterArray getSpecificReleaseNameFilters()
     {
 	List<ISatiniseFilter> list = new ArrayList<ISatiniseFilter>();
-	list.add(new RemovalFilter("([0-9])", ISatiniseFilter.Location.ALL));
-	list.add(new RemovalFilter("([0-9][0-9])", ISatiniseFilter.Location.ALL));
+	list.add(new RemovalFilter("\\([0-9]\\)", ISatiniseFilter.Location.ALL));
+	list.add(new RemovalFilter("\\([0-9][0-9]\\)", ISatiniseFilter.Location.ALL));
 	return new FilterArray(list);
     }
 

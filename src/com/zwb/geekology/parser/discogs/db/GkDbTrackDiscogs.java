@@ -159,7 +159,10 @@ public class GkDbTrackDiscogs extends AbstrGkDbItemDiscogs implements IGkDbTrack
 	    int abs = 0;
 	    for (int i = 1; i < GkDbTrackDiscogs.this.getDiscNo(); i++)
 	    {
-		abs += trackNos.get(i);
+		if(trackNos.containsKey(i))
+		{
+		    abs += trackNos.get(i);
+		}
 	    }
 	    abs += GkDbTrackDiscogs.this.getTrackNo();
 	    return abs;
